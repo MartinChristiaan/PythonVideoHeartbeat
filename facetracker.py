@@ -16,7 +16,7 @@ def crop_frame(frame,rect):
 
 class FaceTracker():
     def __init__(self):
-        self.tracker =cv2.TrackerKCF_create()#TrackerKCF_create()
+        self.tracker =cv2.TrackerMOSSE_create()#TrackerKCF_create()
         self.found_face = False
     def crop_to_face(self,frame): 
         gray_frame = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)

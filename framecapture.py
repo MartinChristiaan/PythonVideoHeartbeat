@@ -7,6 +7,7 @@ class FrameCapture():
 class WebcamCapture(FrameCapture):
    
     def __init__(self):
+        self.fs = 20
         self.camera = cv2.VideoCapture(0)
         self.camera.set(3, 1280)
         self.camera.set(4, 720)
@@ -17,9 +18,9 @@ class WebcamCapture(FrameCapture):
 
 class MixedMotion(FrameCapture):    
     def __init__(self):
-        self.frame = 0
+        self.fs = 20
         self.video_folder = "C:\\Users\\marti\\Downloads\\Data\\mixed_motion\\bmp\\"
-
+        self.frame = 0
     def get_frame(self):
         self.frame+=1
         frame_path = self.video_folder + str(self.frame) + ".bmp"
@@ -32,6 +33,7 @@ class MixedMotion(FrameCapture):
 
 class Translation(FrameCapture):    
     def __init__(self):
+        self.fs = 20
         self.frame = 0
         self.video_folder = "C:\\Users\\marti\\Downloads\\Data\\translation\\bmp\\"
 
@@ -48,6 +50,7 @@ class Translation(FrameCapture):
 class Fitness(FrameCapture):    
     def __init__(self):
         self.frame = 0
+        self.fs = 24
         self.vi_cap = cv2.VideoCapture("C:\\Users\\marti\\Downloads\\Data\\trail2.mp4")
         
     #settings.use_resampling = True

@@ -7,9 +7,15 @@ class HotspotPPGSensor():
 
 
         # Che
-class SimplePPGSensor():
+class PPGSensor():
     def __init__(self):
-        self.rppg = []
+        self.rppgl = []
+        self.rppg = np.array([])
+        
+    def sense_ppg(self,frame,numpixels):
+        pass    
+
+class SimplePPGSensor(PPGSensor):
     def sense_ppg(self,frame,num_pixels):
         r_avg = np.sum(frame[:,:,0])/num_pixels
         g_avg = np.sum(frame[:,:,1])/num_pixels
@@ -18,7 +24,8 @@ class SimplePPGSensor():
         for i,col in enumerate(ppg):
             if math.isnan(col):
                 ppg[i] = 0
-        self.rppg.append(i)
+        self.rppgl.append(ppg)
+        self.rppg = np.transpose(np.array(self.rppgl))
         
 
         
