@@ -2,13 +2,7 @@ from framecapture import FrameCapture
 import cv2
 import numpy as np
 import time
-
-def write_text(img,text,location):
-    font                   = cv2.FONT_HERSHEY_SIMPLEX
-    fontScale              = 1
-    fontColor              = (255,255,255)
-    lineType               = 2
-    cv2.putText(img,text,location,font,fontScale,fontColor,lineType)
+from TextWriter import write_text
 
 
 class SimpleUpdater:
@@ -27,7 +21,10 @@ class SimpleUpdater:
     def update(self):
 
         frame,should_stop = self.update_fun(self.pressed_key)# self.frame_capture.get_frame()
-        write_text(frame,"fps : " + '{0:.2f}'.format(1/self.dt),(0,50))
+        try:
+            write_text(frame,"fps : " + '{0:.2f}'.format(1/self.dt))
+        except Exception:
+            pass
         cv2.imshow("images", frame)
         self.should_stop = should_stop
         
