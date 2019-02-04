@@ -34,14 +34,7 @@ def display(name,q):
 # This is function is responsible for reading some data (IO, serial port, etc)
 # and forwarding it to the display
 # it is run in a thread
-def io(running,q):
-    t = 0
-    while running.is_set():
-        s = np.sin(2 * np.pi * t)
-        t += 0.01
-        q.put([t,s])
-        time.sleep(0.01)
-    print("Done")
+    
 
 if __name__ == '__main__':
     q = Queue()
@@ -50,16 +43,19 @@ if __name__ == '__main__':
     run.set()
 
     # Run io function in a thread
-    t = threading.Thread(target=io, args=(run,q))
-    t.start()
+    
 
     # Start display process
     p = Process(target=display, args=('bob',q))
     p.start()
-    input("See ? Main process immediately free ! Type any key to quit.")
-    run.clear()
+
+    t = 0
+    for i in range(1000):
+        s = np.sin(2 * np.pi * t)
+        t += 0.01
+        q.put([t,s])
+        time.sleep(0.01)
+    
     print("Waiting for scheduler thread to join...")
-    t.join()
-    print("Waiting for graph window process to join...")
     p.join()
     print("Process joined successfully. C YA !")

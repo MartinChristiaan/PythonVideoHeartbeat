@@ -32,14 +32,17 @@ class Evaluator():
         self.f = np.linspace(0,processor.fs/2,processor.fftlength/2 + 1) * 60
         self.bpm = []
         self.snr = []
-    def evaluate(self):
+    def evaluate(self,frame):
         if self.processor.enough_samples:
             normalized_amplitude = self.processor.normalized_amplitude
             bpm_id = np.argmax(normalized_amplitude)
             self.bpm.append(self.f[bpm_id])
+
+            
             if len(self.bpm) > 300:
                 del self.bpm[0]
             self.snr.append(calculateSNR(normalized_amplitude,bpm_id))
-
+            write_text(frame,"BPM : " + str(self.bpm[-1]))
+            write_text(frame,"SNR : " + str(self.snr[-1]))
 
 

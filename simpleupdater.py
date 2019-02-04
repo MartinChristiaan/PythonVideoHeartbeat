@@ -11,40 +11,45 @@ from PyQt5.QtWidgets import *
 from util.qt_util import *
 from util.pyqtgraph_util import *
 
+class Updater():
 
-class SimpleUpdater:
-    def __init__ (self,update_fun):
-        self.update_fun = update_fun
+    def __init__ (self):
         self.should_stop = False
         self.pressed_key = -1
         self.dt  =1
-        while self.should_stop == False:
-            tstart = time.time()
-            self.update()
-            self.dt = time.time()-tstart
- 
-        cv2.destroyAllWindows()          
+        self.wanted_frame=0
 
     def update(self):
-
-        frame,should_stop = self.update_fun(self.pressed_key)# self.frame_capture.get_frame()
+        tstart = time.time()      
+        frames,should_stop = self.update_fun(self.pressed_key)# self.frame_capture.get_frame()
         try:
-            write_text(frame,"fps : " + '{0:.2f}'.format(1/self.dt))
+            write_text(frames[self.wanted_frame],"fps : " + '{0:.2f}'.format(1/self.dt))
         except Exception:
             pass
-        cv2.imshow("images", frame)
+        cv2.imshow("images",frames[self.wanted_frame])
+
         self.should_stop = should_stop
         
         self.pressed_key=cv2.waitKey(1) & 0XFF
         if self.pressed_key== 27 :
             print("Escape")
             self.should_stop = True
+        if self.pressed_key == 119:
+            self.wanted_frame+=1
+            if self.wanted_frame == len(frames):
+                self.wanted_frame = 0
+        self.dt = time.time()-tstart
 
-class HeartBeatGUI:
+
+class SimpleUpdater(Updater):
+    def start_updating(self,update_fun):
+        self.update_fun = update_fun
+        while not self.should_stop:
+            self.update()
+        cv2.destroyAllWindows()
+class HeartBeatGUI(Updater):
     def __init__ (self):
-        self.should_stop = False
-        self.pressed_key = -1
-        self.dt  =1
+        super(HeartBeatGUI,self).__init__()
         self.app,self.w = create_basic_app()
 
     def start_updating(self,update_fun):
@@ -54,21 +59,3 @@ class HeartBeatGUI:
         timer.timeout.connect(self.update)
         execute_app(self.app,self.w)   
 
-    def update(self):
-        
-        tstart = time.time()        
-        frame,should_stop = self.update_fun(self.pressed_key)# self.frame_capture.get_frame()
-        if should_stop:
-            return
-        try:
-            write_text(frame,"fps : " + '{0:.2f}'.format(1/self.dt))
-        except Exception:
-            pass
-        cv2.imshow("images", frame)
-        self.should_stop = should_stop
-        
-        self.pressed_key=cv2.waitKey(1) & 0XFF
-        if self.pressed_key== 27 :
-            print("Escape")
-            self.should_stop = True
-        self.dt = time.time()-tstart

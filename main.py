@@ -5,32 +5,47 @@ from skinclassifier import apply_skin_classifier
 from rppgsensor import SimplePPGSensor
 from TextWriter import refresh
 from facetracker import FaceTracker
-from plotter import Plotter
+from plotter import create_plotter, update_data
+
 from signalprocessor import ChrominanceExtracter
 from evaluator import Evaluator
-capture =Translation()
+from multiprocessing import Process, Manager, Queue
+import sched, time, threading
+import time
+capture =MixedMotion()
 #landmarkdetect = LandmarkTracker()
 tracker = FaceTracker()
-sensor = SimplePPGSensor()
+sensor = SimplePPGSensor(capture)
 processor = ChrominanceExtracter(300,sensor,capture)
-gui = HeartBeatGUI()
+#gui = HeartBeatGUI()
 evalu = Evaluator(processor)
+updater = SimpleUpdater()
+#plotr = Plotter(gui.w,sensor,processor,evalu)
+if __name__ == '__main__':
+    q = Queue()
+    p = Process(target=create_plotter, args=(processor.fs,processor.fftlength,q))
+    p.start()
 
-plotr = Plotter(gui.w,sensor,processor,evalu)
-def update_fun(key):
-    frame,_ = capture.get_frame()
-    #frame,npixels = apply_skin_classifier(frame)
-    #landmarkdetect.detect(frame,key)
-    face = tracker.crop_to_face(frame)
-    face,npixels = apply_skin_classifier(face)
-    sensor.sense_ppg(face,npixels)
-    processor.extract_pulse()
-    evalu.evaluate()
-    #plotr.update_plots()  
-    refresh()
 
-    return face,False    
+    def update_fun(key):
+        frame,_ = capture.get_frame()
+        #frame,npixels = apply_skin_classifier(frame)
+        #landmarkdetect.detect(frame,key)
+        face = tracker.crop_to_face(frame)
+        face,npixels = apply_skin_classifier(face)
+        sensor.sense_ppg(face,npixels)
+        processor.extract_pulse()
+        evalu.evaluate(frame)
+        update_data(q,sensor,processor)
+        refresh()
 
-gui.start_updating(update_fun)
+        return [frame,face],False    
 
-#SimpleUpdater(update_fun)
+
+    #gui.start_updating(update_fun)
+
+    updater.start_updating(update_fun)
+    print("Joining")
+    p.join()
+    print("Done!")
+    p.terminate()
