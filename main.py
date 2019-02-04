@@ -5,26 +5,23 @@ from skinclassifier import apply_skin_classifier
 from rppgsensor import SimplePPGSensor
 from TextWriter import refresh
 from facetracker import FaceTracker
-from plotter import create_plotter, update_data
+from plotter import Plotter
 
 from signalprocessor import ChrominanceExtracter
 from evaluator import Evaluator
 from multiprocessing import Process, Manager, Queue
 import sched, time, threading
 import time
-capture =MixedMotion()
-#landmarkdetect = LandmarkTracker()
-tracker = FaceTracker()
-sensor = SimplePPGSensor(capture)
-processor = ChrominanceExtracter(300,sensor,capture)
-#gui = HeartBeatGUI()
-evalu = Evaluator(processor)
-updater = SimpleUpdater()
-#plotr = Plotter(gui.w,sensor,processor,evalu)
 if __name__ == '__main__':
-    q = Queue()
-    p = Process(target=create_plotter, args=(processor.fs,processor.fftlength,q))
-    p.start()
+    capture =MixedMotion()
+    #landmarkdetect = LandmarkTracker()
+    tracker = FaceTracker()
+    sensor = SimplePPGSensor(capture)
+    processor = ChrominanceExtracter(300,sensor,capture)
+    #gui = HeartBeatGUI()
+    evalu = Evaluator(processor)
+    updater = SimpleUpdater()
+    plotr = Plotter(sensor,processor,evalu)
 
 
     def update_fun(key):
@@ -36,7 +33,7 @@ if __name__ == '__main__':
         sensor.sense_ppg(face,npixels)
         processor.extract_pulse()
         evalu.evaluate(frame)
-        update_data(q,sensor,processor)
+        plotr.update_data()
         refresh()
 
         return [frame,face],False    
@@ -45,7 +42,4 @@ if __name__ == '__main__':
     #gui.start_updating(update_fun)
 
     updater.start_updating(update_fun)
-    print("Joining")
-    p.join()
-    print("Done!")
-    p.terminate()
+    plotr.stop()

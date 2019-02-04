@@ -48,6 +48,6 @@ def create_basic_app():
     return app,w
 
 def execute_app(app,w):
-    w.resize(1920,800 )
+    w.resize(1280,800 )
     w.show()
     app.exec_()

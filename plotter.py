@@ -61,49 +61,80 @@ def create_plotter(fs,fftlength,q):
 
     def update_plots(q):
         try:
+            #[r,g,b,x_stride,snr,bpm,bpmdt,t_snr,t_bpm,t]
             item = q.get()
             r = item[0]
             g = item[1]
             b = item[2]
-            t = item[3]
+            x_stride = item[3]
+            snr = item[4]
+            amp = item[5]
+            bpmdt = item[6]
+            tx = item[7]
+            t_snr = item[8]
+            t_bpm = item[9]
+            t = item[10]
+
             plt_r.setData(t,r)
+            plt_g.setData(t,g)
+            plt_b.setData(t,b)
+            if len(t_bpm)>1:
+                plt_x.setData(tx,x_stride)
+                plt_snr.setData(t_snr,snr)
+                plt_bpm.setData(f,amp)
+                plt_bpmdt.setData(t_bpm,bpmdt)
+
         except Exception:
             pass
        
 
     timer = QtCore.QTimer()
-    timer.start(50)
+    timer.start(20)
     timer.timeout.connect(lambda : update_plots(q))
 
     execute_app(app,w)   
 
 
+class Plotter():
+    def __init__(self,sensor,proccessor,evaluator):
+        self.q = Queue()
+        self.sensor = sensor
+        self.proccessor = proccessor
+        self.evalu = evaluator
+        self.p = Process(target=create_plotter, args=(proccessor.fs,proccessor.fftlength,self.q))
+        self.p.start()
+    def stop(self):
+        self.p.join()
 
+    def update_data(self):
 
-# Executed on main thread
-def update_data(q,sensor,proccessor):
-    
-    
-    num_frames = sensor.rppg.shape[1]
-    start = max([num_frames-100,0])
-    t = np.arange(num_frames)/proccessor.fs
-    rPPG = sensor.rppg
-    t = t[start:num_frames]
-    r = rPPG[0,start:num_frames]
-    g = rPPG[1,start:num_frames]
-    b = rPPG[2,start:num_frames]
-    item = [r,g,b,t]
-    q.put(item)
-    # plt_r.setData(t[start:num_frames],rPPG[0,start:num_frames])
-    # plt_g.setData(t[start:num_frames],rPPG[1,start:num_frames])
-    # plt_b.setData(t[start:num_frames],rPPG[2,start:num_frames])
-    
-    # if processor.enough_samples:
-    #     plt_x.setData(t[-300:],processor.x_stride_method)
-    #     snr = evaluator.snr
-    #     plt_snr.setData(t[-min(100,len(snr)):],snr[-min(100,len(snr)):])
-    #     plt_bpm.setData(f,processor.normalized_amplitude)
-    #     bpm_movavg = evaluator.bpm
-    #     #bpm_movavg = np.convolve(evaluator.bpm, np.ones((100,))/100, mode='valid')
-    #     plt_bpmdt.setData(t[-min(200,len(bpm_movavg)):],bpm_movavg[-min(200,len(bpm_movavg)):])
-    
+        num_frames = self.sensor.rppg.shape[1]
+        start = max([num_frames-100,0])
+        t_ = np.arange(num_frames)/self.proccessor.fs
+        rPPG = self.sensor.rppg
+        
+        t = t_[start:]
+        r = rPPG[0,start:]
+        g = rPPG[1,start:]
+        b = rPPG[2,start:]
+        x_stride = np.zeros(300)
+        snr = np.zeros(10)
+      
+        amp = np.zeros(300)
+        bpmdt = np.zeros(1)
+        t_snr = t[-10:]
+        t_bpm = t[-1:]
+        tx = t_
+        if self.proccessor.enough_samples:
+            x_stride = self.proccessor.x_stride_method
+            tx = t_[-300:]
+            snr = self.evalu.snr
+            snr = snr[-min(100,len(snr)):]
+            t_snr = t[-min(100,len(snr)):]
+            amp = self.proccessor.normalized_amplitude
+            bpmdt = self.evalu.bpm
+            bpmdt = bpmdt[-min(200,len(bpmdt)):]
+            t_bpm = t[-min(200,len(bpmdt)):]
+        
+        item = [r,g,b,x_stride,snr,amp,bpmdt,tx,t_snr,t_bpm,t]
+        self.q.put(item)
