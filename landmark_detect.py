@@ -74,6 +74,12 @@ def dist(p1,p2):
     dy2 = (y1-y2)*(y1-y2)
     return math.sqrt(dx2+dy2)
 
+def dist2mean(arr,mean):
+    distances = np.zeros(len(arr))
+    for i in range(arr.shape[0]):
+        distances[i] = dist((arr[i,0,0],arr[i,0,1]),mean)
+    return distances
+
 class LandmarkTrackerEyeSafe():
     def __init__(self):
         self.detector = dlib.get_frontal_face_detector()
@@ -90,11 +96,19 @@ class LandmarkTrackerEyeSafe():
         self.mouth = np.array([])
         self.points = np.array([])        
 
-    def mark_landmarks(self,frame):
+    def display_marks(self,frame):
         if not len(self.points) == 0:
+            write_text(frame,"Left Eye trackers : " + str(len(self.eyel)))
+            write_text(frame,"Right Eye trackers : " + str(len(self.eyer)))
+            write_text(frame,"Mouth trackers : " + str(len(self.mouth)))
+
+                
             eyel = self.points[:5]
             eyer = self.points[6:11]
             mouth = self.points[11:] 
+
+            ## Second error check
+
             for i in range(eyel.shape[0]):
                 col =  (255, 255, 0) 
                 if i in self.blacklist:
@@ -112,6 +126,14 @@ class LandmarkTrackerEyeSafe():
                 cv2.circle(frame, (mouth[i,0,0], mouth[i,0,1]), 1, col, -1)
 
 
+        try:
+            cv2.line(frame,self.peyel,self.peyer,(255,0,0),1)            
+            cv2.line(frame,self.peyel,self.pmouth,(255,0,0),1)            
+            cv2.line(frame,self.peyer,self.pmouth,(255,0,0),1)
+        except Exception:
+            pass
+    def mark_landmarks(self,frame):
+        if not len(self.points) == 0:
             eyel_ids = [id for id in range(5) if id not in self.blacklist]
             eyer_ids = [id for id in range(6,11) if id not in self.blacklist]
             mouth_bl = [id for id in range(11,self.points.shape[0]) if id not in self.blacklist]
@@ -120,19 +142,41 @@ class LandmarkTrackerEyeSafe():
             self.eyer = self.points[eyer_ids]
             self.mouth = self.points[mouth_bl]
 
-            write_text(frame,"Left Eye trackers : " + str(len(self.eyel)))
-            write_text(frame,"Right Eye trackers : " + str(len(self.eyer)))
-            write_text(frame,"Mouth trackers : " + str(len(self.mouth)))
-
+           
             self.peyel = mean_pos(self.eyel)
             self.peyer = mean_pos(self.eyer)
             self.pmouth = mean_pos(self.mouth)
-            try:
-                cv2.line(frame,self.peyel,self.peyer,(255,0,0),1)            
-                cv2.line(frame,self.peyel,self.pmouth,(255,0,0),1)            
-                cv2.line(frame,self.peyer,self.pmouth,(255,0,0),1)
-            except Exception:
-                pass
+
+            distances = dist2mean(self.eyel,self.peyel)
+            for i,d in enumerate(distances):
+                if d > 20:
+                    self.blacklist.append(i)
+                    
+            distances = dist2mean(self.eyer,self.peyer)
+            for i,d in enumerate(distances):
+                if d > 20:
+                    self.blacklist.append(i+6)
+
+            eyel_ids = [id for id in range(5) if id not in self.blacklist]
+            eyer_ids = [id for id in range(6,11) if id not in self.blacklist]
+
+            self.eyel = self.points[eyel_ids]
+            self.eyer = self.points[eyer_ids]
+
+            self.peyel = mean_pos(self.eyel)
+            self.peyer = mean_pos(self.eyer)
+                        
+
+            dY = self.peyer[1] - self.peyel[1]
+            dX = self.peyer[0] - self.peyel[0]
+            angle = np.degrees(np.arctan2(dY, dX))
+            eyesCenter = ((self.peyel[0] + self.peyer[0]) // 2,(self.peyel[1] + self.peyer[1]) // 2)
+            self.display_marks(frame)
+        # grab the rotation matrix for rotating and scaling the face
+            M = cv2.getRotationMatrix2D(eyesCenter, angle, 1)
+            result = cv2.warpAffine(frame, M, frame.shape[1::-1], flags=cv2.INTER_LINEAR)
+            return result
+        return frame
 
     def track(self,gray):
         if not len(self.prev_gray) == 0 and not self.points.shape[0] == 0:
@@ -148,49 +192,60 @@ class LandmarkTrackerEyeSafe():
 
     def detect(self, frame):
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        #if self.mouth.shape[0] < 18 or self.eyel.shape[0] < 5 or self.eyer.shape[0] < 5: 
-        rects = self.detector(gray, 0)
-        if len(rects) == 1:
-            rect = rects[0]
-            shape = self.predictor(gray, rect)
-            shape = shape_to_np(shape)
-            self.blacklist = []
-            shape = shape[37:]
-            newpoints = np.zeros((len(shape),1,2),dtype = np.float32)
-            for i,(x,y) in enumerate(shape):
-                newpoints[i,0,0] = x
-                newpoints[i,0,1] = y
-            eyel = newpoints[:5]
-            eyer = newpoints[6:11]
-            mouth = newpoints[11:]
-            peyel = mean_pos(eyel)
-            peyer = mean_pos(eyer)
-            reye_ok = False
-            leye_ok = False
-            
+
+        
+        if self.mouth.shape[0] < 20 or self.eyel.shape[0] < 5 or self.eyer.shape[0] < 5: 
             eyes = eye_cascade.detectMultiScale(gray, 1.35, 10)
-            for eye in eyes:
-                draw_rect(frame,eye)
-                peye = eye[0]+ eye[2]/2, eye[1] + eye[3]/2
-                dl = dist(peye,peyel)
-                dr = dist(peye,peyer)
-                if  dl< 10:
-                    leye_ok = True
-                elif dr<10:
-                    reye_ok = True
-            if reye_ok and leye_ok:
-                write_text(frame,"Detecting")
-                self.points = newpoints  
-                self.blacklist = []
-                self.prev_points = []
-                self.prev_gray = []
-            else :                
+            if len(eyes) > 1:
+                rects = self.detector(gray, 0)
+                if len(rects) == 1:
+                    rect = rects[0]
+                    shape = self.predictor(gray, rect)
+                    shape = shape_to_np(shape)
+                    self.blacklist = []
+                    shape = shape[37:]
+                    newpoints = np.zeros((len(shape),1,2),dtype = np.float32)
+                    for i,(x,y) in enumerate(shape):
+                        newpoints[i,0,0] = x
+                        newpoints[i,0,1] = y
+                    eyel = newpoints[:5]
+                    eyer = newpoints[6:11]
+                    mouth = newpoints[11:]
+                    peyel = mean_pos(eyel)
+                    peyer = mean_pos(eyer)
+                    reye_ok = False
+                    leye_ok = False
+                    
+                
+                    for eye in eyes:
+                        draw_rect(frame,eye)
+                        peye = eye[0]+ eye[2]/2, eye[1] + eye[3]/2
+                        dl = dist(peye,peyel)
+                        dr = dist(peye,peyer)
+                        if  dl< 10:
+                            leye_ok = True
+                        elif dr<10:
+                            reye_ok = True
+                    if reye_ok and leye_ok:
+                        write_text(frame,"Detecting")
+                        self.points = newpoints  
+                        self.blacklist = []
+                        self.prev_points = []
+                        self.prev_gray = []
+                    else :                
+                        write_text(frame,"Tracking")
+                        self.track(gray)
+                else:
+                    write_text(frame,"Tracking")
+                    self.track(gray)
+            else:
                 write_text(frame,"Tracking")
                 self.track(gray)
         else:
             write_text(frame,"Tracking")
             self.track(gray)
-        self.mark_landmarks(frame)
+            
+        frame_rot = self.mark_landmarks(frame)
         self.prev_gray.append(gray)
         self.prev_points.append(self.points)
         if len(self.prev_gray) > 8:
@@ -198,7 +253,8 @@ class LandmarkTrackerEyeSafe():
         if len(self.prev_points) > 8:
             del self.prev_points[0]
         self.cnt +=1
-
+        #self.displaymarks(frame)
+        return frame_rot
 
 def get_bounding_box(points):
     minx = np.min(points[:,0,0])
@@ -319,6 +375,7 @@ class LandmarkTracker():
             for i in range(e.shape[0]):
                 if id not in self.blacklist and e[i] > 30:
                     self.blacklist.append(i)
+
 
 
 

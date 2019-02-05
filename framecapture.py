@@ -41,7 +41,7 @@ class MixedMotion(FrameCapture):
     def __init__(self):
         self.fs = 20
         self.video_folder = "C:\\Users\\marti\\Downloads\\Data\\mixed_motion\\bmp\\"
-        self.frame = 1000
+        self.frame = 0
     def get_frame(self):
         self.frame+=1
         frame_path = self.video_folder + str(self.frame) + ".bmp"

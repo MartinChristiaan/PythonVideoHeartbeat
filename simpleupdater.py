@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 import time
 from TextWriter import write_text
-
+import sys
 from PyQt5 import QtGui  
 from PyQt5 import QtCore  
 from PyQt5.QtCore import Qt
@@ -22,10 +22,15 @@ class Updater():
     def update(self):
         tstart = time.time()      
         frames,should_stop = self.update_fun(self.pressed_key)# self.frame_capture.get_frame()
+        mystr = " time :  {:.2f}".format(self.dt*1000) + " (ms)" + " Fps :	{:.2f}".format(1/self.dt)
+        sys.stdout.write("\r"+mystr)
+        sys.stdout.flush()
         try:
+            
             write_text(frames[self.wanted_frame],"fps : " + '{0:.2f}'.format(1/self.dt))
         except Exception:
             pass
+            
         cv2.imshow("images",frames[self.wanted_frame])
 
         self.should_stop = should_stop
