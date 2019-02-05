@@ -60,33 +60,35 @@ def create_plotter(fs,fftlength,q):
     w.setLayout(layout_main)
 
     def update_plots(q):
-        try:
-            #[r,g,b,x_stride,snr,bpm,bpmdt,t_snr,t_bpm,t]
-            item = q.get()
-            r = item[0]
-            g = item[1]
-            b = item[2]
-            x_stride = item[3]
-            snr = item[4]
-            amp = item[5]
-            bpmdt = item[6]
-            tx = item[7]
-            t_snr = item[8]
-            t_bpm = item[9]
-            t = item[10]
+        if not q.empty(): 
+            while q.qsize()>1:
+                q.get()    
+            try:            
+                item = q.get()
+                r = item[0]
+                g = item[1]
+                b = item[2]
+                x_stride = item[3]
+                snr = item[4]
+                amp = item[5]
+                bpmdt = item[6]
+                tx = item[7]
+                t_snr = item[8]
+                t_bpm = item[9]
+                t = item[10]
 
-            plt_r.setData(t,r)
-            plt_g.setData(t,g)
-            plt_b.setData(t,b)
-            if len(t_bpm)>1:
-                plt_x.setData(tx,x_stride)
-                plt_snr.setData(t_snr,snr)
-                plt_bpm.setData(f,amp)
-                plt_bpmdt.setData(t_bpm,bpmdt)
+                plt_r.setData(t,r)
+                plt_g.setData(t,g)
+                plt_b.setData(t,b)
+                if len(t_bpm)>1:
+                    plt_x.setData(tx,x_stride)
+                    plt_snr.setData(t_snr,snr)
+                    plt_bpm.setData(f,amp)
+                    plt_bpmdt.setData(t_bpm,bpmdt)
 
-        except Exception:
-            pass
-       
+            except Exception:
+                pass
+        
 
     timer = QtCore.QTimer()
     timer.start(20)

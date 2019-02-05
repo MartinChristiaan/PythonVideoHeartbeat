@@ -10,6 +10,7 @@ def apply_skin_classifier(frame):
     skinMask = cv2.erode(skinMask, kernel, iterations = 2)
     skinMask = cv2.dilate(skinMask, kernel, iterations = 2)
     skinMask = cv2.GaussianBlur(skinMask, (3, 3), 0)
-    num_skin_pixels = np.sum(np.max(skinMask,1))
+  
+    num_skin_pixels = skinMask.clip(0,1).sum()
     skin = cv2.bitwise_and(frame, frame, mask = skinMask)
     return skin,num_skin_pixels

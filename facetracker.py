@@ -2,16 +2,37 @@ import numpy as np
 import cv2
 import scipy.io as sio
 import math
-
+from util.opencv_util import draw_rect
 cascPath = "haarcascade_frontalface_default.xml"
+eyePath = "haarcascade_eye.xml"
 face_cascade = cv2.CascadeClassifier(cascPath)
-
+eye_cascade = cv2.CascadeClassifier(eyePath)
 def crop_frame(frame,rect):
     x = rect[0]
     y = rect[1]
     w = rect[2]
     h = rect[3]
     return frame[y:y+h,x:x+w]
+
+
+def track_eyes(frame):
+    gray_frame = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+    eyes = eye_cascade.detectMultiScale(gray_frame, 1.35, 10)
+    for eye in eyes:
+        draw_rect(frame,eye)
+    if len(eyes) >= 2:
+        for i,eye1 in enumerate (eyes):
+            for j,eye2 in enumerate(eyes):
+                if not i == j:
+                    d = abs(eye1[1] + eye1[3]/2 - (eye2[1]+ eye2[3]/2))
+                    print(d)
+                    if d < 20:
+                        return True
+
+    return False
+
+        
+       
 
 
 class FaceTracker():

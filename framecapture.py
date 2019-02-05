@@ -2,6 +2,7 @@ import cv2
 import abc
 import os
 import time
+from TextWriter import write_text
 class FrameCapture():
     def get_frame(self):
         return _,_
@@ -40,13 +41,15 @@ class MixedMotion(FrameCapture):
     def __init__(self):
         self.fs = 20
         self.video_folder = "C:\\Users\\marti\\Downloads\\Data\\mixed_motion\\bmp\\"
-        self.frame = 0
+        self.frame = 1000
     def get_frame(self):
         self.frame+=1
         frame_path = self.video_folder + str(self.frame) + ".bmp"
         exists = os.path.isfile(frame_path)
         if exists:
-            return cv2.imread(frame_path),False
+            frame = cv2.imread(frame_path)
+            write_text(frame,"Frame : " + str(self.frame))
+            return frame,False            
         else:
             print(frame_path + " Does not exist")
             return None,True
@@ -76,6 +79,7 @@ class Stationary(FrameCapture):
     def get_frame(self):
         self.frame+=1
         frame_path = self.video_folder + str(self.frame) + ".bmp"
+        
         exists = os.path.isfile(frame_path)
         if exists:
             return cv2.imread(frame_path),False

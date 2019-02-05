@@ -27,6 +27,8 @@ class SimplePPGSensor(PPGSensor):
             if math.isnan(col):
                 ppg[i] = 0
         self.rppgl.append(ppg)
+        if len(self.rppgl)>300:
+            del self.rppgl[0]
         rppg = np.transpose(np.array(self.rppgl))
         self.rppg = self.cap.resample(rppg)
         

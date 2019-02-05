@@ -14,3 +14,9 @@ def draw_rect(frame,rect):
     for (x, y, w, h) in rects:
         cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 255), 2)
 
+def crop_frame(frame,rect):
+    x = rect[0]
+    y = rect[1]
+    w = rect[2]
+    h = rect[3]
+    return frame[y:y+h,x:x+w]
