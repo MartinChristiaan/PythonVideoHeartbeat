@@ -46,4 +46,5 @@ class ChrominanceExtracter(Proccessor):
         self.x_stride_method = Xf- alpha_CHROM*Yf
         STFT = np.fft.fft(self.x_stride_method,fftlength)[fft_roi]
         self.normalized_amplitude = np.abs(STFT)/np.max(np.abs(STFT))
-        
+
+

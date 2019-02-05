@@ -67,6 +67,22 @@ class Translation(FrameCapture):
             print(frame_path + " Does not exist")
             return None,True
 
+class Stationary(FrameCapture):    
+    def __init__(self):
+        self.fs = 20
+        self.frame = 0
+        self.video_folder = "C:\\Users\\marti\\Downloads\\Data\\stationary\\bmp\\"
+
+    def get_frame(self):
+        self.frame+=1
+        frame_path = self.video_folder + str(self.frame) + ".bmp"
+        exists = os.path.isfile(frame_path)
+        if exists:
+            return cv2.imread(frame_path),False
+        else:
+            print(frame_path + " Does not exist")
+            return None,True
+
 class Fitness(FrameCapture):    
     def __init__(self):
         self.frame = 0

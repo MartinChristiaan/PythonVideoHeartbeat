@@ -9,8 +9,6 @@ def dbv(x):
     return 20*np.log10(np.abs(x))
 
 def calculateSNR(hwfft, f, nsig=1):
-
-
     hwfft = hwfft.squeeze()
     signalBins = np.arange(f - nsig + 1, f + nsig + 2, dtype='int64')
     signalBins = signalBins[signalBins > 0]

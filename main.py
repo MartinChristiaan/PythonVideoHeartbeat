@@ -1,4 +1,4 @@
-from framecapture import WebcamCapture,MixedMotion,Translation,Fitness
+from framecapture import WebcamCapture,MixedMotion,Translation,Stationary,Fitness
 from simpleupdater import SimpleUpdater,HeartBeatGUI
 from landmark_detect import LandmarkDetecter,LandmarkTracker
 from skinclassifier import apply_skin_classifier
@@ -13,7 +13,7 @@ from multiprocessing import Process, Manager, Queue
 import sched, time, threading
 import time
 if __name__ == '__main__':
-    capture =MixedMotion()
+    capture =Stationary()
     #landmarkdetect = LandmarkTracker()
     tracker = FaceTracker()
     sensor = SimplePPGSensor(capture)
