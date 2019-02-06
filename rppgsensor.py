@@ -1,27 +1,22 @@
 import math
 import numpy as np
 from framecapture import FrameCapture
-from util.opencv_util import draw_rect
-class HotspotPPGSensor():
-    def get_rawppg(self,frame,landmarktracker):
-       peyer = landmarktracker.peyer
-       peyel = landmarktracker.peyel
-       pmouth = landmarktracker.pmouth
-       
-
-
-       try:
-           x0 = peyel[0]
-           x1 = peyer[0]
-           y0 = pmouth[1]
-           y1 = max(peyer[1],peyel[1])
-           h = y1 - y0
-           w = x1 - x0
-           rect = int(x0-w*1.3),int(y0-0.3*h),int(w*3.5),int(2.5*h)
-           draw_rect(frame,rect)
-       except Exception:
-           pass
-
+from util.opencv_util import draw_rect, crop_frame
+class LandMarkRoiFinder():
+    def get_roi(self,frame,landmarktracker):
+        peyer = landmarktracker.peyer
+        peyel = landmarktracker.peyel
+        pmouth = landmarktracker.pmouth
+    
+        x0 = peyel[0]
+        x1 = peyer[0]
+        y0 = pmouth[1]
+        y1 = max(peyer[1],peyel[1])
+        h = y1 - y0
+        w = x1 - x0
+        rect = int(x0-w*1.3),int(y0+2.2*h),int(w*3.5),int(-2.5*h)
+        draw_rect(frame,rect)
+        return crop_frame(frame,rect)
 
         # Che
 class PPGSensor():
