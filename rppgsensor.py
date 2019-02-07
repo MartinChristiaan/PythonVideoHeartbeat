@@ -1,7 +1,7 @@
 import math
 import numpy as np
 from framecapture import FrameCapture
-from util.opencv_util import draw_rect, crop_frame
+from util.opencv_util import draw_rect, crop_frame, get_subroi_rect
 class LandMarkRoiFinder():
     def get_roi(self,frame,landmarktracker):
         peyer = landmarktracker.peyer
@@ -38,10 +38,71 @@ class SimplePPGSensor(PPGSensor):
             if math.isnan(col):
                 ppg[i] = 0
         self.rppgl.append(ppg)
-        if len(self.rppgl)>300:
-            del self.rppgl[0]
-        rppg = np.transpose(np.array(self.rppgl))
+        # if len(self.rppgl)>300:
+        #     del self.rppgl[0]
+        rppg = np.transpose(np.array(self.rppgl[-300:]))
         self.rppg = self.cap.resample(rppg)
         
 
+
+
+class SimpleForeheadSensor(PPGSensor):
+    def sense_ppg(self,frame,bp):
+
+        sub_roi_rect = get_subroi_rect(frame,[.35,.70,.08,.23])
+        draw_rect(frame,sub_roi_rect)
+        forehead = crop_frame(frame,sub_roi_rect)
+        num_pixels = forehead.shape[0] * forehead.shape[1]
+        r_avg = np.sum(forehead[:,:,0])/num_pixels
+        g_avg = np.sum(forehead[:,:,1])/num_pixels
+        b_avg = np.sum(forehead[:,:,2])/num_pixels
+        ppg = [r_avg,g_avg,b_avg]
+        for i,col in enumerate(ppg):
+            if math.isnan(col):
+                ppg[i] = 0
+        self.rppgl.append(ppg)
+        # if len(self.rppgl)>300:
+        #     del self.rppgl[0]
+        rppg = np.transpose(np.array(self.rppgl[-300:]))
+        self.rppg = self.cap.resample(rppg)
         
+
+class RegionSensor(PPGSensor):
+    def sense_ppg(self,frame,bp):
+        regions = [[.15,.40,.45,.75],[.6,.85,.45,.75],[.35,.70,.08,.23]]
+
+        num_pixels = 0
+        r = []
+        g = []
+        b = []
+        for region in regions:
+            #print(region)
+            region = get_subroi_rect(frame,region)
+            draw_rect(frame,region)
+            region = crop_frame(frame,region)
+            r.append(np.sum(region[:,:,0]))
+            g.append(np.sum(region[:,:,1]))
+            b.append(np.sum(region[:,:,2]))
+            num_pixels+=region.shape[0] + region.shape[1] 
+
+        r_avg = sum(r)/num_pixels
+        g_avg = sum(g)/num_pixels
+        b_avg = sum(b)/num_pixels
+
+        ppg = [r_avg,g_avg,b_avg]
+        for i,col in enumerate(ppg):
+            if math.isnan(col):
+                ppg[i] = 0
+        self.rppgl.append(ppg)
+        # if len(self.rppgl)>300:
+        #     del self.rppgl[0]
+        rppg = np.transpose(np.array(self.rppgl[-300:]))
+        self.rppg = self.cap.resample(rppg)
+        
+
+
+
+# import matlab.engine
+# eng = matlab.engine.start_matlab()
+# tf = eng.isprime(37)
+# print(tf)

@@ -22,9 +22,7 @@ class Updater():
     def update(self):
         tstart = time.time()      
         frames,should_stop = self.update_fun(self.pressed_key)# self.frame_capture.get_frame()
-        mystr = " time :  {:.2f}".format(self.dt*1000) + " (ms)" + " Fps :	{:.2f}".format(1/self.dt)
-        sys.stdout.write("\r"+mystr)
-        sys.stdout.flush()
+
         try:
             
             write_text(frames[self.wanted_frame],"fps : " + '{0:.2f}'.format(1/self.dt))

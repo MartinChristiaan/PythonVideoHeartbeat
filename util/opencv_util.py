@@ -20,3 +20,11 @@ def crop_frame(frame,rect):
     w = rect[2]
     h = rect[3]
     return frame[y:y+h,x:x+w]
+
+def get_subroi_rect(frame_cropped,roi):
+    w,h = frame_cropped.shape[:2]
+    min_x = int(roi[0] * w)
+    max_x = int(roi[1] * w)
+    min_y = int(roi[2] * h)
+    max_y = int(roi[3] * h)
+    return [min_x,min_y,max_x-min_x,max_y-min_y]

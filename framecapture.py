@@ -38,54 +38,48 @@ class WebcamCapture(FrameCapture):
         
 
 class MixedMotion(FrameCapture):    
-    def __init__(self):
+    def __init__(self,frame):
         self.fs = 20
         self.video_folder = "C:\\Users\\marti\\Downloads\\Data\\mixed_motion\\bmp\\"
-        self.frame = 0
+        self.frame = frame
+        self.next_path = self.video_folder + str(self.frame) + ".bmp"
+
     def get_frame(self):
         self.frame+=1
-        frame_path = self.video_folder + str(self.frame) + ".bmp"
-        exists = os.path.isfile(frame_path)
+        curpath = self.next_path
+        self.next_path = self.video_folder + str(self.frame) + ".bmp"
+        exists = os.path.isfile(self.next_path)
         if exists:
-            frame = cv2.imread(frame_path)
+            frame = cv2.imread(curpath)
             write_text(frame,"Frame : " + str(self.frame))
-            return frame,False            
+            return frame,False       
         else:
-            print(frame_path + " Does not exist")
-            return None,True
-
-class Translation(FrameCapture):    
-    def __init__(self):
-        self.fs = 20
-        self.frame = 0
-        self.video_folder = "C:\\Users\\marti\\Downloads\\Data\\translation\\bmp\\"
-
-    def get_frame(self):
-        self.frame+=1
-        frame_path = self.video_folder + str(self.frame) + ".bmp"
-        exists = os.path.isfile(frame_path)
-        if exists:
-            return cv2.imread(frame_path),False
-        else:
-            print(frame_path + " Does not exist")
-            return None,True
+            frame = cv2.imread(curpath)
+            write_text(frame,"Frame : " + str(self.frame))
+            return frame,True
 
 class Stationary(FrameCapture):    
-    def __init__(self):
+    def __init__(self,frame):
         self.fs = 20
-        self.frame = 0
         self.video_folder = "C:\\Users\\marti\\Downloads\\Data\\stationary\\bmp\\"
+        self.frame = frame
+        self.next_path = self.video_folder + str(self.frame) + ".bmp"
 
     def get_frame(self):
         self.frame+=1
-        frame_path = self.video_folder + str(self.frame) + ".bmp"
-        
-        exists = os.path.isfile(frame_path)
+        curpath = self.next_path
+        self.next_path = self.video_folder + str(self.frame) + ".bmp"
+        exists = os.path.isfile(self.next_path)
         if exists:
-            return cv2.imread(frame_path),False
+            frame = cv2.imread(curpath)
+            write_text(frame,"Frame : " + str(self.frame))
+            return frame,False       
         else:
-            print(frame_path + " Does not exist")
-            return None,True
+            frame = cv2.imread(curpath)
+            write_text(frame,"Frame : " + str(self.frame))
+            return frame,True
+
+
 
 class Fitness(FrameCapture):    
     def __init__(self):
