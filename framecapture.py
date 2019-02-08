@@ -85,14 +85,19 @@ class Fitness(FrameCapture):
     def __init__(self):
         self.frame = 0
         self.fs = 24
-        self.vi_cap = cv2.VideoCapture("C:\\Users\\marti\\Downloads\\Data\\trail2.mp4")
-        
+        self.vi_cap = cv2.VideoCapture("C:\\Users\\marti\\Downloads\\Data\\Exhaustion.mp4")
+        _,self.nextframe = self.vi_cap.read()
     #settings.use_resampling = True
     def get_frame(self):
-        _,frame = self.vi_cap.read()
+        frame = self.nextframe
+        self.nextframe = self.vi_cap.read()
+        if self.nextframe == None
+            return frame,True
+        return frame,False
+
+        
  #       rows,cols = frame.shape[:2]
         #M = cv2.getRotationMatrix2D((cols/2,rows/2),270,1)
         #frame = cv2.warpAffine(frame,M,(cols,rows))
 #        frame = cv2.resize(frame,None,fx=0.5, fy=0.5, interpolation = cv2.INTER_CUBIC)
-        return frame,False
-
+        

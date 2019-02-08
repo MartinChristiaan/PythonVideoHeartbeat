@@ -12,7 +12,7 @@ from signalprocessor import ChrominanceExtracter
 from evaluator import Evaluator
 
 if __name__ == '__main__':
-    capture = MixedMotion(1)
+    capture = Fitness()
     #landmarkdetect = LandmarkTrackerEyeSafe()
     tracker = FaceTracker()
     #roifinder = LandMarkRoiFinder()
