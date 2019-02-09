@@ -17,7 +17,7 @@ class TextWriter():
 
 writer = TextWriter()
 def write_text(frame,text):
-    writer.write_text(frame,text)
-
+    #writer.write_text(frame,text)
+    pass
 def refresh():
     writer.refresh()

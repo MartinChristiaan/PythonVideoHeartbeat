@@ -13,7 +13,7 @@ class WebcamCapture(FrameCapture):
    
     def __init__(self):
         self.fs = 20
-        self.camera = cv2.VideoCapture(1)
+        self.camera = cv2.VideoCapture(0)
         self.camera.set(3, 1280)
         self.camera.set(4, 720)
         self.timestamps = []
@@ -84,17 +84,21 @@ class Stationary(FrameCapture):
 class Fitness(FrameCapture):    
     def __init__(self):
         self.frame = 0
-        self.fs = 24
-        self.vi_cap = cv2.VideoCapture("C:\\Users\\marti\\Downloads\\Data\\Exhaustion.mp4")
+        
+        self.vi_cap = cv2.VideoCapture("C:\\Users\\marti\\Downloads\\Data\\me\\Talking.mp4")
         _,self.nextframe = self.vi_cap.read()
+        self.fs =  self.vi_cap.get(cv2.CAP_PROP_FPS)
+        print("FPS : " + str(self.fs) )
     #settings.use_resampling = True
     def get_frame(self):
         frame = self.nextframe
-        self.nextframe = self.vi_cap.read()
-        if self.nextframe == None
+        _,self.nextframe = self.vi_cap.read()
+        try:
+            if self.nextframe.size ==None:
+                return frame,True
+        except Exception:
             return frame,True
         return frame,False
-
         
  #       rows,cols = frame.shape[:2]
         #M = cv2.getRotationMatrix2D((cols/2,rows/2),270,1)

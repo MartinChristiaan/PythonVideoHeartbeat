@@ -1,7 +1,7 @@
 import math
 import numpy as np
 from framecapture import FrameCapture
-from util.opencv_util import draw_rect, crop_frame, get_subroi_rect
+from util.opencv_util import *
 class LandMarkRoiFinder():
     def get_roi(self,frame,landmarktracker):
         peyer = landmarktracker.peyer
@@ -67,6 +67,21 @@ class SimpleForeheadSensor(PPGSensor):
         self.rppg = self.cap.resample(rppg)
         
 
+
+def blackout_regions(frame):
+    regions = [[.20,.45,.30,.54],[.35,.70,.77,.93],[.55,.85,.30,.54]]
+    #num_pixels = frame.shape[0] * frame.shape[1]
+    rects = []
+    for region in regions:
+        #print(region)
+        region_rect = get_subroi_rect(frame,region)
+        #region = crop_frame(frame,region)
+        blackout_rect(frame,region_rect) 
+        rects.append(region_rect)
+    #    num_pixels-=region_rect[2] * region_rect[3] 
+    #return num_pixels
+       
+
 class RegionSensor(PPGSensor):
     def sense_ppg(self,frame,bp):
         regions = [[.15,.40,.45,.75],[.6,.85,.45,.75],[.35,.70,.08,.23]]
@@ -83,7 +98,7 @@ class RegionSensor(PPGSensor):
             r.append(np.sum(region[:,:,0]))
             g.append(np.sum(region[:,:,1]))
             b.append(np.sum(region[:,:,2]))
-            num_pixels+=region.shape[0] + region.shape[1] 
+            num_pixels+=region.shape[0] * region.shape[1] 
 
         r_avg = sum(r)/num_pixels
         g_avg = sum(g)/num_pixels
@@ -99,6 +114,7 @@ class RegionSensor(PPGSensor):
         rppg = np.transpose(np.array(self.rppgl[-300:]))
         self.rppg = self.cap.resample(rppg)
         
+
 
 
 

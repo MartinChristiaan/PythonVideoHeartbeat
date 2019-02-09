@@ -192,8 +192,6 @@ class LandmarkTrackerEyeSafe():
 
     def detect(self, frame):
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-        
         if self.mouth.shape[0] < 20 or self.eyel.shape[0] < 5 or self.eyer.shape[0] < 5: 
             eyes = eye_cascade.detectMultiScale(gray, 1.35, 10)
             if len(eyes) > 1:

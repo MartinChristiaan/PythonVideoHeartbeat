@@ -21,6 +21,14 @@ def crop_frame(frame,rect):
     h = rect[3]
     return frame[y:y+h,x:x+w]
 
+def blackout_rect(frame,rect):
+    x = rect[0]
+    y = rect[1]
+    w = rect[2]
+    h = rect[3]
+    frame[y:y+h,x:x+w,:] =0
+
+
 def get_subroi_rect(frame_cropped,roi):
     w,h = frame_cropped.shape[:2]
     min_x = int(roi[0] * w)

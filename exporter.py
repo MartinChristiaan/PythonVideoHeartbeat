@@ -3,6 +3,7 @@ from signalprocessor import Proccessor
 from evaluator import Evaluator
 import pandas as pd
 import os
+import numpy
 
 output_path = "C:\\Users\\marti\\source\\repos\\PythonVideoHeartbeat\\output"
 def export_data(eval:Evaluator):
@@ -21,6 +22,12 @@ def export_to_matlab(sensor):
     rPPG = np.transpose(np.array(sensor.rppgl))
     mat_dict = {"rPPG" : rPPG}
     sio.savemat(matname + ".mat",mat_dict)
+
+def running_mean(x, N):
+    cumsum = numpy.cumsum(numpy.insert(x, 0, 0)) 
+    return (cumsum[N:] - cumsum[:-N]) / float(N)
+
+
         
 if __name__ == "__main__":
     from os import listdir
@@ -48,7 +55,7 @@ if __name__ == "__main__":
 
     plt.figure()
     for snr in snr_arrs:
-        plt.plot(snr)
+        plt.plot(running_mean(snr,20))
     plt.ylabel('SNR')
     plt.xlabel('frame')
     plt.legend(names)

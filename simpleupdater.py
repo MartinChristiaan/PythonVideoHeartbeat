@@ -24,7 +24,6 @@ class Updater():
         frames,should_stop = self.update_fun(self.pressed_key)# self.frame_capture.get_frame()
 
         try:
-            
             write_text(frames[self.wanted_frame],"fps : " + '{0:.2f}'.format(1/self.dt))
         except Exception:
             pass
