@@ -11,6 +11,10 @@ def export_data(eval:Evaluator):
     np.savetxt(output_path + "\\" + name + "_snr.csv", eval.snr, delimiter=",")
     np.savetxt(output_path + "\\" +name + "_bpm.csv", eval.bpm, delimiter=",")
 
+def export_data_named(eval:Evaluator,name):
+    np.savetxt(output_path + "\\" + name + "_snr.csv", eval.snr, delimiter=",")
+    np.savetxt(output_path + "\\" +name + "_bpm.csv", eval.bpm, delimiter=",")
+
 import scipy.io as sio
 import csv
 import numpy as np
@@ -49,13 +53,16 @@ if __name__ == "__main__":
     plt.figure()
     for bpm in bpm_arrs:
         plt.plot(bpm)
+        
     plt.ylabel('BPM')
     plt.xlabel('frame')
     plt.legend(names)
 
     plt.figure()
-    for snr in snr_arrs:
+    for i,snr in enumerate(snr_arrs):
         plt.plot(running_mean(snr,20))
+        mean = np.mean(snr)
+        print(names[i] + " : " + str(mean))
     plt.ylabel('SNR')
     plt.xlabel('frame')
     plt.legend(names)

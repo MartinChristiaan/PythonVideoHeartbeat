@@ -13,7 +13,7 @@ class WebcamCapture(FrameCapture):
    
     def __init__(self):
         self.fs = 20
-        self.camera = cv2.VideoCapture(0)
+        self.camera = cv2.VideoCapture(1)
         self.camera.set(3, 1280)
         self.camera.set(4, 720)
         self.timestamps = []
